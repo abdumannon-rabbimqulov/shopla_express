@@ -2,13 +2,7 @@
 
 ## Loyiha Arxitekturasi (Project Architecture)
 
-Loyiha asosan quyidagi qismlardan iborat bo'lishi tavsiya etiladi:
-
-1. **Mijoz Tomon (Frontend / Mobile):** Kuryerlar uchun mobil ilova (React Native, Flutter yoki Swift/Kotlin)
-2. **Server Tomon (Backend API):** Asosiy biznes mantiq va ma'lumotlarni qayta ishlash uchun RESTful yoki GraphQL API (Node.js/Express, Python/Django/FastAPI, yoki Go)
-3. **Ma'lumotlar Bazasi (Database):** Kuryer ma'lumotlari va boshqa hujjatlarni saqlash uchun (PostgreSQL yoki MySQL)
-4. **Fayl Saqlash Xizmati (Cloud Storage):** Pasport rasmlari va boshqa media fayllarni saqlash uchun (AWS S3, Firebase Storage, MinIO)
-5. **Autentifikatsiya va SMS Xizmati:** Telefon raqamini tasdiqlash uchun SMS jo'natish xizmati (Eskiz.uz, Twilio yoki Firebase Auth)
+* **Backend API:** Python (FastAPI)
 
 ---
 
