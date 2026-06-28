@@ -1,16 +1,17 @@
 from pydantic import BaseModel, Field
 
 class RegisterStep1(BaseModel):
-    phone: str = Field(..., description="Courier phone number, e.g. +998901234567")
+    email: str = Field(..., description="Courier email address")
 
 class RegisterStep2(BaseModel):
-    phone: str
+    email: str
     otp_code: str
     password: str
 
 class CourierResponse(BaseModel):
     id: str
-    phone: str
+    email: str
+    phone: str | None
     status: str
     
     class Config:

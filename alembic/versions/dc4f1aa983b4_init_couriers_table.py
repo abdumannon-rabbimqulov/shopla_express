@@ -22,7 +22,8 @@ def upgrade() -> None:
     """Upgrade schema."""
     op.create_table('couriers',
     sa.Column('id', sa.String(), nullable=False),
-    sa.Column('phone', sa.String(), nullable=False),
+    sa.Column('email', sa.String(), nullable=False),
+    sa.Column('phone', sa.String(), nullable=True),
     sa.Column('password_hash', sa.String(), nullable=False),
     sa.Column('vehicle_type', sa.String(), nullable=False, server_default='SCOOTER'),
     sa.Column('passport_front_url', sa.String(), nullable=True),
@@ -39,10 +40,12 @@ def upgrade() -> None:
     sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=True),
     sa.PrimaryKeyConstraint('id')
     )
+    op.create_index(op.f('ix_couriers_email'), 'couriers', ['email'], unique=True)
     op.create_index(op.f('ix_couriers_phone'), 'couriers', ['phone'], unique=True)
 
 
 def downgrade() -> None:
     """Downgrade schema."""
     op.drop_index(op.f('ix_couriers_phone'), table_name='couriers')
+    op.drop_index(op.f('ix_couriers_email'), table_name='couriers')
     op.drop_table('couriers')

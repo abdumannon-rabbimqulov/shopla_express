@@ -10,8 +10,8 @@ router = APIRouter(prefix="/api/v1/auth", tags=["Auth"])
 async def register_step1(data: RegisterStep1, db: AsyncSession = Depends(get_db)):
     service = AuthService(db)
     try:
-        mock_otp = await service.process_step1(data.phone)
-        return {"message": "OTP sent successfully", "mock_otp": mock_otp}
+        await service.process_step1(data.email)
+        return {"message": "OTP sent successfully to email"}
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
 
@@ -19,14 +19,15 @@ async def register_step1(data: RegisterStep1, db: AsyncSession = Depends(get_db)
 async def register_step2(data: RegisterStep2, db: AsyncSession = Depends(get_db)):
     service = AuthService(db)
     try:
-        await service.process_step2(data.phone, data.otp_code, data.password)
+        await service.process_step2(data.email, data.otp_code, data.password)
         return {"message": "OTP verified and password set. Please upload passports to complete registration."}
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
 
 @router.post("/register-step3")
 async def register_step3(
-    phone: str = Form(...),
+    email: str = Form(...),
+    phone: str = Form(..., description="Courier phone number to save in profile"),
     vehicle_type: str = Form(..., description="SCOOTER or CAR"),
     passport_front: UploadFile = File(...),
     passport_back: UploadFile = File(...),
@@ -37,6 +38,7 @@ async def register_step3(
     service = AuthService(db)
     try:
         courier = await service.process_step3(
+            email=email,
             phone=phone, 
             vehicle_type=vehicle_type,
             passport_front=passport_front, 

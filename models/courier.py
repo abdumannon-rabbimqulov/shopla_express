@@ -7,7 +7,8 @@ class Courier(Base):
     __tablename__ = "couriers"
 
     id = Column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
-    phone = Column(String, unique=True, index=True, nullable=False)
+    email = Column(String, unique=True, index=True, nullable=False)
+    phone = Column(String, nullable=True) # Will be filled in step 3
     password_hash = Column(String, nullable=False)
     
     # Vehicle and Docs

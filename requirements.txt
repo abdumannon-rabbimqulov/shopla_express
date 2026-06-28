@@ -9,3 +9,4 @@ python-multipart
 redis
 alembic
 greenlet
+aiosmtplib

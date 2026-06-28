@@ -15,19 +15,24 @@ class AuthService:
         self.repo = CourierRepository(db)
         self.redis_client = redis.from_url(settings.REDIS_URL, decode_responses=True)
 
-    async def process_step1(self, phone: str) -> str:
+    async def process_step1(self, email: str) -> None:
+        import random
+        from services.email_service import send_otp_email
+        
         # Check if already registered
-        existing = await self.repo.get_by_phone(phone)
+        existing = await self.repo.get_by_email(email)
         if existing:
-            raise ValueError("Phone number is already registered.")
+            raise ValueError("Email is already registered.")
             
-        mock_otp = "12345"
-        state = {"phone": phone, "otp": mock_otp, "step": 1}
-        await self.redis_client.set(f"reg_state:{phone}", json.dumps(state), ex=600)
-        return mock_otp
+        otp = str(random.randint(100000, 999999))
+        state = {"email": email, "otp": otp, "step": 1}
+        await self.redis_client.set(f"reg_state:{email}", json.dumps(state), ex=600)
+        
+        # Send actual email
+        await send_otp_email(email, otp)
 
-    async def process_step2(self, phone: str, otp_code: str, password: str):
-        state_str = await self.redis_client.get(f"reg_state:{phone}")
+    async def process_step2(self, email: str, otp_code: str, password: str):
+        state_str = await self.redis_client.get(f"reg_state:{email}")
         if not state_str:
             raise ValueError("Session expired or not found")
             
@@ -37,10 +42,11 @@ class AuthService:
             
         state["password_hash"] = get_password_hash(password)
         state["step"] = 2
-        await self.redis_client.set(f"reg_state:{phone}", json.dumps(state), ex=600)
+        await self.redis_client.set(f"reg_state:{email}", json.dumps(state), ex=600)
 
     async def process_step3(
         self, 
+        email: str, 
         phone: str, 
         vehicle_type: str,
         passport_front: UploadFile, 
@@ -48,7 +54,7 @@ class AuthService:
         texpassport_front: UploadFile | None = None,
         texpassport_back: UploadFile | None = None
     ):
-        state_str = await self.redis_client.get(f"reg_state:{phone}")
+        state_str = await self.redis_client.get(f"reg_state:{email}")
         if not state_str:
             raise ValueError("Session expired or not found")
             
@@ -81,7 +87,8 @@ class AuthService:
 
         # Use repo to create record
         courier = await self.repo.create_courier(
-            phone=state["phone"],
+            email=state["email"],
+            phone=phone,
             password_hash=state["password_hash"],
             front_url=front_path,
             back_url=back_path,
@@ -90,5 +97,5 @@ class AuthService:
             texpassport_back_url=tex_back_path
         )
         
-        await self.redis_client.delete(f"reg_state:{phone}")
+        await self.redis_client.delete(f"reg_state:{email}")
         return courier

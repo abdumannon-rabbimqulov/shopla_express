@@ -10,4 +10,12 @@ class Settings:
     ALGORITHM = os.getenv("ALGORITHM", "HS256")
     ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", "30"))
 
+    # SMTP Settings
+    SMTP_HOST = os.getenv("SMTP_HOST", "smtp.resend.com")
+    SMTP_PORT = int(os.getenv("SMTP_PORT", "465"))
+    SMTP_SECURE = os.getenv("SMTP_SECURE", "true").lower() == "true"
+    SMTP_USER = os.getenv("SMTP_USER", "resend")
+    SMTP_PASSWORD = os.getenv("SMTP_PASSWORD", "re_X9tYuZDa_FcHqpdhbXApb9s4MBhi5Nwxh")
+    SMTP_FROM = os.getenv("SMTP_FROM", "Shopla <noreply@shopla.uz>")
+
 settings = Settings()

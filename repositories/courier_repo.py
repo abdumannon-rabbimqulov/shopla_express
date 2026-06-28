@@ -11,8 +11,8 @@ class CourierRepository:
         result = await self.db.execute(select(Courier).where(Courier.id == courier_id))
         return result.scalars().first()
 
-    async def get_by_phone(self, phone: str) -> Optional[Courier]:
-        result = await self.db.execute(select(Courier).where(Courier.phone == phone))
+    async def get_by_email(self, email: str) -> Optional[Courier]:
+        result = await self.db.execute(select(Courier).where(Courier.email == email))
         return result.scalars().first()
 
     async def get_pending_couriers(self) -> List[Courier]:
@@ -21,7 +21,8 @@ class CourierRepository:
 
     async def create_courier(
         self, 
-        phone: str, 
+        email: str, 
+        phone: str,
         password_hash: str, 
         front_url: str, 
         back_url: str,
@@ -30,6 +31,7 @@ class CourierRepository:
         texpassport_back_url: Optional[str] = None
     ) -> Courier:
         new_courier = Courier(
+            email=email,
             phone=phone,
             password_hash=password_hash,
             vehicle_type=vehicle_type,
