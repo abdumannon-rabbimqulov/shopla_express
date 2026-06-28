@@ -21,5 +21,20 @@ services:
     ports:
       - "6379:6379"
 
+  api:
+    build: .
+    container_name: shopla_api
+    restart: always
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./uploads:/app/uploads
+    environment:
+      - DATABASE_URL=postgresql+asyncpg://shopla_user:shopla_password@db:5432/shopla_db
+      - REDIS_URL=redis://redis:6379/0
+    depends_on:
+      - db
+      - redis
+
 volumes:
   postgres_data:
