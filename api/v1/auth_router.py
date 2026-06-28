@@ -27,13 +27,23 @@ async def register_step2(data: RegisterStep2, db: AsyncSession = Depends(get_db)
 @router.post("/register-step3")
 async def register_step3(
     phone: str = Form(...),
+    vehicle_type: str = Form(..., description="SCOOTER or CAR"),
     passport_front: UploadFile = File(...),
     passport_back: UploadFile = File(...),
+    texpassport_front: UploadFile | None = File(None),
+    texpassport_back: UploadFile | None = File(None),
     db: AsyncSession = Depends(get_db)
 ):
     service = AuthService(db)
     try:
-        courier = await service.process_step3(phone, passport_front, passport_back)
+        courier = await service.process_step3(
+            phone=phone, 
+            vehicle_type=vehicle_type,
+            passport_front=passport_front, 
+            passport_back=passport_back,
+            texpassport_front=texpassport_front,
+            texpassport_back=texpassport_back
+        )
         return {"message": "Registration complete! Your account is pending admin approval.", "courier_id": courier.id}
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))

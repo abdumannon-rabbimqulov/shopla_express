@@ -19,12 +19,24 @@ class CourierRepository:
         result = await self.db.execute(select(Courier).where(Courier.status == "PENDING"))
         return result.scalars().all()
 
-    async def create_courier(self, phone: str, password_hash: str, front_url: str, back_url: str) -> Courier:
+    async def create_courier(
+        self, 
+        phone: str, 
+        password_hash: str, 
+        front_url: str, 
+        back_url: str,
+        vehicle_type: str,
+        texpassport_front_url: Optional[str] = None,
+        texpassport_back_url: Optional[str] = None
+    ) -> Courier:
         new_courier = Courier(
             phone=phone,
             password_hash=password_hash,
+            vehicle_type=vehicle_type,
             passport_front_url=front_url,
             passport_back_url=back_url,
+            texpassport_front_url=texpassport_front_url,
+            texpassport_back_url=texpassport_back_url,
             status="PENDING"
         )
         self.db.add(new_courier)
