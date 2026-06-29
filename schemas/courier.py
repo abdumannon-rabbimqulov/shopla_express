@@ -4,7 +4,7 @@ class RegisterStep1(BaseModel):
     email: str = Field(..., description="Courier email address")
 
 class RegisterStep2(BaseModel):
-    email: str
+    token: str = Field(..., description="Session token received in Step 1")
     otp_code: str
     password: str
 

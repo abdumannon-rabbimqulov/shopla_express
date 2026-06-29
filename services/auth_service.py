@@ -15,8 +15,9 @@ class AuthService:
         self.repo = CourierRepository(db)
         self.redis_client = redis.from_url(settings.REDIS_URL, decode_responses=True)
 
-    async def process_step1(self, email: str) -> None:
+    async def process_step1(self, email: str) -> str:
         import random
+        import uuid
         from services.email_service import send_otp_email
         
         # Check if already registered
@@ -25,14 +26,17 @@ class AuthService:
             raise ValueError("Email is already registered.")
             
         otp = str(random.randint(100000, 999999))
+        token = str(uuid.uuid4())
         state = {"email": email, "otp": otp, "step": 1}
-        await self.redis_client.set(f"reg_state:{email}", json.dumps(state), ex=600)
+        await self.redis_client.set(f"reg_state:{token}", json.dumps(state), ex=600)
         
         # Send actual email
         await send_otp_email(email, otp)
+        
+        return token
 
-    async def process_step2(self, email: str, otp_code: str, password: str):
-        state_str = await self.redis_client.get(f"reg_state:{email}")
+    async def process_step2(self, token: str, otp_code: str, password: str):
+        state_str = await self.redis_client.get(f"reg_state:{token}")
         if not state_str:
             raise ValueError("Session expired or not found")
             
@@ -42,11 +46,11 @@ class AuthService:
             
         state["password_hash"] = get_password_hash(password)
         state["step"] = 2
-        await self.redis_client.set(f"reg_state:{email}", json.dumps(state), ex=600)
+        await self.redis_client.set(f"reg_state:{token}", json.dumps(state), ex=600)
 
     async def process_step3(
         self, 
-        email: str, 
+        token: str, 
         phone: str, 
         vehicle_type: str,
         passport_front: UploadFile, 
@@ -54,7 +58,7 @@ class AuthService:
         texpassport_front: UploadFile | None = None,
         texpassport_back: UploadFile | None = None
     ):
-        state_str = await self.redis_client.get(f"reg_state:{email}")
+        state_str = await self.redis_client.get(f"reg_state:{token}")
         if not state_str:
             raise ValueError("Session expired or not found")
             
@@ -97,5 +101,5 @@ class AuthService:
             texpassport_back_url=tex_back_path
         )
         
-        await self.redis_client.delete(f"reg_state:{email}")
+        await self.redis_client.delete(f"reg_state:{token}")
         return courier
